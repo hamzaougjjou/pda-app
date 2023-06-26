@@ -4,10 +4,15 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js"
   },
+  "engines": {
+    "node": ""
+  },
+
   "keywords": [],
-  "author": "",
+  "author": "16.13.2",
+
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.20.2",

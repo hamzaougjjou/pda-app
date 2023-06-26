@@ -643,4 +643,4 @@ function generateId() {
 
 
 // creating a server
-app.listen(process.env.APP_PORT);
+app.listen(process.env.APP_PORT || process.env.PORT);
