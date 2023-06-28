@@ -182,7 +182,7 @@ app.post('/login', function (req, res) {
             );
             return 0;
         }
-        else if (name.trim().length < 2) {
+        else if (id.trim().length < 2) {
             res.status(404).send(
                 {
                     "success": false,
