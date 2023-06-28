@@ -17,10 +17,10 @@ app.use(cors());
 
 // connect to mySql database
 var connection = mysql.createConnection({
-    host: '127.0.0.1',
-    user: 'hamza',
-    password: 'hamza',
-    database: 'pda'
+    host: process.env.DB_HOST ,
+    user: process.env.DB_USERNAME,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_DATABASE 
 });
 connection.connect();
 
@@ -640,7 +640,47 @@ function generateId() {
     }
     return randomID; // vc89773
 }
+// =============================================================
 
+//get a single product item
+app.get('/test' , function (req, res) {
+
+
+
+    connection.query('select * from test where 1'
+        , [null]
+        , (error, results, fields) => {
+
+            //data base unknow error
+            if (error) {
+                res.status(500).send(
+                    {
+                        "success": false,
+                        "message": "somthing went wrong"
+                    }
+                );
+                return false;
+            }
+
+            //check if product not exists
+            if (results.length == 0) {
+                res.status(200).json({
+                    "success": false,
+                    "message": "product not found"
+                })
+                return false;
+            }
+
+            res.status(200).json({
+                "success": true,
+                "message": "product deleted successfully",
+                "product": results
+            })
+
+            // ======================================
+        });
+})
+// =============================================================
 
 // creating a server
 app.listen(process.env.APP_PORT || process.env.PORT);
