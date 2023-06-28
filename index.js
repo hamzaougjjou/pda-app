@@ -169,9 +169,9 @@ app.post('/register', function (req, res) {
 // log in
 app.post('/login', function (req, res) {
 
-    let  id = req.query.id
-    let password  = req.query.password;
-    
+    let  id = req.body.id
+    let password  = req.body.password;
+
     connection.query('select * from users where id=? and password=?'
         , [id, password]
         , (error, results, fields) => {
