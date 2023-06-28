@@ -169,11 +169,8 @@ app.post('/register', function (req, res) {
 // log in
 app.post('/login', function (req, res) {
 
-    let  id = req.body.id
-    let password  = req.body.password;
-
-    res.send( { "a":req.body , "b":req.query } );
-    return 0;
+    let  id = req.query.id
+    let password  = req.query.password;
 
     connection.query('select * from users where id=? and password=?'
         , [id, password]
@@ -187,6 +184,7 @@ app.post('/login', function (req, res) {
                 );
             }
             const data = results;
+
             if (data.length == 0) {
                 res.status(401).send(
                     {
@@ -194,8 +192,7 @@ app.post('/login', function (req, res) {
                         "message": "user id or password not correct"
                     }
                 );
-            }
-            else {
+            } else {
                 let user = data[0];
 
                 try {
@@ -224,7 +221,6 @@ app.post('/login', function (req, res) {
                 }
                
             }
-            res.send(data[0]);
         });
 
 })
