@@ -169,8 +169,9 @@ app.post('/register', function (req, res) {
 // log in
 app.post('/login', function (req, res) {
 
-    let { id, password } = req.query;
-    connection.query('select id,name,phone,company_id,address,created_at,created_by,role from users where id=? and password=?'
+    let  id = req.body.id
+    let password  = req.body.password;
+    connection.query('select * from users where id=? and password=?'
         , [id, password]
         , (error, results, fields) => {
             if (error) {
@@ -192,7 +193,9 @@ app.post('/login', function (req, res) {
             }
             else {
                 let user = data[0];
-                const token = generateToken(user);
+
+                try {
+                     const token = generateToken(user);
 
                 res.status(200).send(
                     {
@@ -204,6 +207,18 @@ app.post('/login', function (req, res) {
                         }
                     }
                 );
+                } catch (error) {
+                    res.status(200).send(
+                        {
+                            "success": true,
+                            "message": "user authorized",
+                            "data": {
+                                "user": user
+                            }
+                        }
+                    );
+                }
+               
             }
             res.send(data[0]);
         });
