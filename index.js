@@ -118,17 +118,17 @@ app.post('/register', function (req, res) {
     //creation aff client by siller
     else if (auth.user.role == "siller") {
         let role = 'client';
-        let sector_id = req.query.sector_id;
+        let sector_id = req.query.sectur_id;
         if (!sector_id) {
             res.status(400).send(
                 {
                     "success": true,
-                    "message": "sector id is required"
+                    "message": "sectur id is required"
                 }
             );
             return 0;
         }
-        connection.query('INSERT INTO users (id,name,phone,company_id,adress,password,created_by,role,sector_id) VALUE ( ? , ? , ? , ? , ? , ? , ? ,?,? )'
+        connection.query('INSERT INTO users (id,name,phone,company_id,address,password,created_by,role,sectur_id) VALUE ( ? , ? , ? , ? , ? , ? , ? ,?,? )'
             , [id, name, phone, company_id, adress, password, created_by, role, sector_id]
             , (error, result) => {
                 if (error) {
