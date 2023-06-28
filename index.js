@@ -18,7 +18,7 @@ app.use(cors());
 
 // connect to mySql database
 var connection = mysql.createConnection({
-    host: "b8urbhjjqawd9w3ukybw-mysql.services.clever-cloud.com" ,
+    host: "b8urbhjjqawd9w3ukybw-mysql.services.clever-cloud.com",
     user: "ukv9c9vpdg7hiwvg",
     password: "jBbszbEUjWB9d9tn9Hy9",
     database: "b8urbhjjqawd9w3ukybw"
@@ -75,7 +75,7 @@ app.post('/register', function (req, res) {
         );
         return 0;
     }
-    else if (password.trim().length < 3) {
+    else if (password.trim().length < 6 ) {
         res.status(404).send(
             {
                 "success": false,
@@ -169,8 +169,47 @@ app.post('/register', function (req, res) {
 // log in
 app.post('/login', function (req, res) {
 
-    let  id = req.query.id
-    let password  = req.query.password;
+    let id = req.query.id
+    let password = req.query.password;
+
+        //validate data 
+        if (!id) {
+            res.status(404).send(
+                {
+                    "success": false,
+                    "message": "id is required"
+                }
+            );
+            return 0;
+        }
+        else if (name.trim().length < 2) {
+            res.status(404).send(
+                {
+                    "success": false,
+                    "message": "invalid id"
+                }
+            );
+            return 0;
+        }
+        //validate data 
+        if (!password) {
+            res.status(404).send(
+                {
+                    "success": false,
+                    "message": "password is required"
+                }
+            );
+            return 0;
+        }
+        else if (password.trim().length < 6 ) {
+            res.status(404).send(
+                {
+                    "success": false,
+                    "message": "invalid password"
+                }
+            );
+            return 0;
+        }
 
     connection.query('select * from users where id=? and password=?'
         , [id, password]
@@ -194,10 +233,7 @@ app.post('/login', function (req, res) {
                 );
             } else {
                 let user = data[0];
-
-                try {
-                     const token = generateToken(user);
-
+                const token = generateToken(user);
                 res.status(200).send(
                     {
                         "success": true,
@@ -208,18 +244,7 @@ app.post('/login', function (req, res) {
                         }
                     }
                 );
-                } catch (error) {
-                    res.status(200).send(
-                        {
-                            "success": true,
-                            "message": "user authorized",
-                            "data": {
-                                "user": user
-                            }
-                        }
-                    );
-                }
-               
+
             }
         });
 
@@ -254,7 +279,7 @@ app.get('/clients', function (req, res) {
     if (q) {
         myDbQuery1 = "select * from users where created_by=? and (name like '%' ? '%' or id like '%' ? '%' ) and role='client'";
     }
-    connection.query(myDbQuery1, [userId, q , q ]
+    connection.query(myDbQuery1, [userId, q, q]
         , (error, results, fields) => {
             //data base unknow error
             if (error) {
@@ -306,7 +331,7 @@ app.get('/sellers', function (req, res) {
     if (q) {
         myDbQuery1 = "select * from users where created_by=? and (name like '%' ? '%' or id like '%' ? '%' ) and role='seller'";
     }
-    connection.query(myDbQuery1, [userId, q , q ]
+    connection.query(myDbQuery1, [userId, q, q]
         , (error, results, fields) => {
             //data base unknow error
             if (error) {
@@ -600,9 +625,9 @@ app.get('/sellers', function (req, res) {
 // })
 
 //create an order
-app.post('/order/create' , function (req , res ) {
-    
-    res.status(200).send( req.body );
+app.post('/order/create', function (req, res) {
+
+    res.status(200).send(req.body);
 })
 
 //generate a login token
@@ -660,7 +685,7 @@ function generateId() {
 // =============================================================
 
 //get a single product item
-app.get('/' , function (req, res) {
+app.get('/', function (req, res) {
 
 
 
@@ -700,4 +725,4 @@ app.get('/' , function (req, res) {
 // =============================================================
 
 // creating a server
-app.listen( 8080 || process.env.PORT);
+app.listen(8080 || process.env.PORT);
