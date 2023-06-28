@@ -172,6 +172,9 @@ app.post('/login', function (req, res) {
     let  id = req.body.id
     let password  = req.body.password;
 
+    res.send( { "a":req.body , "b":req.query } );
+    return 0;
+
     connection.query('select * from users where id=? and password=?'
         , [id, password]
         , (error, results, fields) => {
