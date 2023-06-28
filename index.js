@@ -44,7 +44,7 @@ app.post('/register', function (req, res) {
     let adress = req.query.adress;
     let password = req.query.password;
     let created_by = auth.user.id;
-    let role = 'siller';
+    let role = 'seller';
 
     //validate data 
     if (!name) {
@@ -87,7 +87,7 @@ app.post('/register', function (req, res) {
 
     //creatin seller by admin
     if (auth.user.role == "admin") {
-        let role = 'siller';
+        role = 'seller';
         connection.query('INSERT INTO users (id,name,phone,company_id,adress,password,created_by,role) VALUE ( ? , ? , ? , ? , ? , ? , ? ,? )'
             , [id, name, phone, company_id, adress, password, created_by, role]
             , (error, result) => {
@@ -115,8 +115,8 @@ app.post('/register', function (req, res) {
                 return 0;
             });
     }
-    //creation aff client by siller
-    else if (auth.user.role == "siller") {
+    //creation aff client by seller
+    else if (auth.user.role == "seller") {
         let role = 'client';
         let sector_id = req.query.sectur_id;
         if (!sector_id) {
@@ -168,8 +168,9 @@ app.post('/register', function (req, res) {
 
 // log in
 app.post('/login', function (req, res) {
+
     let { id, password } = req.query;
-    connection.query('select id,name,phone,company_id,adress,created_at,created_by,role from users where id=? and password=?'
+    connection.query('select id,name,phone,company_id,address,created_at,created_by,role from users where id=? and password=?'
         , [id, password]
         , (error, results, fields) => {
             if (error) {
@@ -220,7 +221,7 @@ app.get('/clients', function (req, res) {
         });
         return false;
     }
-    if (auth.user.role != "siller") {
+    if (auth.user.role != "seller") {
         res.status(401).send(
             {
                 "success": false,
@@ -263,7 +264,7 @@ app.get('/clients', function (req, res) {
 })
 
 //get a single user get all client search for client 
-app.get('/sillers', function (req, res) {
+app.get('/sellers', function (req, res) {
     const auth = authenticateToken(req);
     //check if user loged in
     if (auth.status === false) {
@@ -286,9 +287,9 @@ app.get('/sillers', function (req, res) {
     let q = req.query.query;
     let userId = auth.user.id;
 
-    let myDbQuery1 = "select * from users where created_by=? and role='siller'";
+    let myDbQuery1 = "select * from users where created_by=? and role='seller'";
     if (q) {
-        myDbQuery1 = "select * from users where created_by=? and (name like '%' ? '%' or id like '%' ? '%' ) and role='siller'";
+        myDbQuery1 = "select * from users where created_by=? and (name like '%' ? '%' or id like '%' ? '%' ) and role='seller'";
     }
     connection.query(myDbQuery1, [userId, q , q ]
         , (error, results, fields) => {
@@ -341,7 +342,7 @@ app.get('/sillers', function (req, res) {
 //         });
 //         return false;
 //     }
-//     if (auth.user.role != "siller") {
+//     if (auth.user.role != "seller") {
 //         res.status(401).send(
 //             {
 //                 "success": false,
@@ -456,7 +457,7 @@ app.get('/sillers', function (req, res) {
 //         });
 //         return false;
 //     }
-//     if (auth.user.role != "siller") {
+//     if (auth.user.role != "seller") {
 //         res.status(401).send(
 //             {
 //                 "success": false,
