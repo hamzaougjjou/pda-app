@@ -14,13 +14,12 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
 
-
 // connect to mySql database
 var connection = mysql.createConnection({
-    host: process.env.DB_HOST ,
-    user: process.env.DB_USERNAME,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_DATABASE 
+    host: "b8urbhjjqawd9w3ukybw-mysql.services.clever-cloud.com" ,
+    user: "ukv9c9vpdg7hiwvg",
+    password: "jBbszbEUjWB9d9tn9Hy9",
+    database: "b8urbhjjqawd9w3ukybw"
 });
 connection.connect();
 
@@ -590,7 +589,7 @@ app.post('/order/create' , function (req , res ) {
 
 //generate a login token
 function generateToken(user) {
-    return jwt.sign({ user: user }, process.env.JWT_SECRET);
+    return jwt.sign({ user: user }, "CKOo8qDADlUHrPHKe3znFowr7OeuIuAEhBRr3mBLlwOvIKxTUJn57Vgmn83LeMe4");
 }
 
 //check auth token key
@@ -605,7 +604,7 @@ function authenticateToken(req) {
     }
 
     try {
-        const auth = jwt.verify(token, process.env.JWT_SECRET);
+        const auth = jwt.verify(token, "CKOo8qDADlUHrPHKe3znFowr7OeuIuAEhBRr3mBLlwOvIKxTUJn57Vgmn83LeMe4");
         return {
             status: true,
             user: auth.user
@@ -643,7 +642,7 @@ function generateId() {
 // =============================================================
 
 //get a single product item
-app.get('/test' , function (req, res) {
+app.get('/' , function (req, res) {
 
 
 
