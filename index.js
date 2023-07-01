@@ -346,7 +346,7 @@ app.get('/sellers', function (req, res) {
 
             res.status(200).json({
                 "success": true,
-                "message": "clients retrieved successfully",
+                "message": "sellers retrieved successfully",
                 "data": results
             })
 
