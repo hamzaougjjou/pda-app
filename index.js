@@ -324,7 +324,7 @@ app.get('/sellers', function (req, res) {
         return false;
     }
 
-    let q = req.query.query;
+    let q = req.query.q;
     let userId = auth.user.id;
 
     let myDbQuery1 = "select * from users where created_by=? and role='seller'";
