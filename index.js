@@ -303,7 +303,52 @@ app.get('/clients', function (req, res) {
         });
 })
 
-//get a single user get all client search for client 
+//delete a seller by admin
+app.delete('/seller/:id', function (req, res) {
+    const auth = authenticateToken(req);
+    //check if user loged in
+    if (auth.status === false) {
+        res.status(401).json({
+            "success": false,
+            "message": "unauthenticated",
+        });
+        return false;
+    }
+    if (auth.user.role != "admin") {
+        res.status(401).send(
+            {
+                "success": false,
+                "message": "unautherized"
+            }
+        );
+        return false;
+    }
+
+    let id = req.params.id;
+
+    connection.query( "delete from users wher id=? and role='seller'" , [  id ]
+        , (error, results, fields) => {
+            //data base unknow error
+            if (error) {
+                res.status(500).send(
+                    {
+                        "success": false,
+                        "message": "somthing went wrong"
+                    }
+                );
+                return false;
+            }
+
+            res.status(200).json({
+                "success": true,
+                "message": "seller deleted successfully"
+            })
+
+            // ======================================
+
+        });
+})
+
 app.get('/sellers', function (req, res) {
     const auth = authenticateToken(req);
     //check if user loged in
