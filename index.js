@@ -324,10 +324,10 @@ app.delete('/seller/:id', function (req, res) {
         return false;
     }
 
-    let id = req.params.id;
+    let sellerId = req.params.id;
 
-    connection.query( "delete from users where id=? and role='seller'" ,
-         [  id ]
+    connection.query( "delete from users where id = ? " ,
+         [  sellerId ]
         , (error, results, fields) => {
             //data base unknow error
             if (error) {
