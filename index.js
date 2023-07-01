@@ -326,7 +326,7 @@ app.delete('/seller/:id', function (req, res) {
 
     let sellerId = req.params.id;
 
-    connection.query( "delete from users where id = ? " ,
+    connection.query( `delete from users where id=${sellerId}` ,
          [  sellerId ]
         , (error, results, fields) => {
             //data base unknow error
