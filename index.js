@@ -401,6 +401,45 @@ app.get('/sellers', function (req, res) {
         });
 })
 
+app.get('/products', function (req, res) {
+    const auth = authenticateToken(req);
+    //check if user loged in
+    if (auth.status === false) {
+        res.status(401).json({
+            "success": false,
+            "message": "unauthenticated",
+        });
+        return false;
+    }
+   
+
+    let userId = auth.user.id;
+
+    let myDbQuery1 = "select * from products where created_by=? or seller_id=?";
+    connection.query(myDbQuery1, [ userId , userId ]
+        , (error, results, fields) => {
+            //data base unknow error
+            if (error) {
+                res.status(500).send(
+                    {
+                        "success": false,
+                        "message": "somthing went wrong"
+                    }
+                );
+                return false;
+            }
+
+            res.status(200).json({
+                "success": true,
+                "message": "products retrieved successfully",
+                "data": results
+            })
+
+            // ======================================
+
+        });
+})
+
 // // upload file
 // let storagePath = 'uploads/images/products'
 // const storage = multer.diskStorage({
@@ -728,47 +767,6 @@ function generateId() {
     }
     return randomID; // vc89773
 }
-// =============================================================
-
-//get a single product item
-app.get('/', function (req, res) {
-
-
-
-    connection.query('select * from test where 1'
-        , [null]
-        , (error, results, fields) => {
-
-            //data base unknow error
-            if (error) {
-                res.status(500).send(
-                    {
-                        "success": false,
-                        "message": "somthing went wrong"
-                    }
-                );
-                return false;
-            }
-
-            //check if product not exists
-            if (results.length == 0) {
-                res.status(200).json({
-                    "success": false,
-                    "message": "product not found"
-                })
-                return false;
-            }
-
-            res.status(200).json({
-                "success": true,
-                "message": "product deleted successfully",
-                "product": results
-            })
-
-            // ======================================
-        });
-})
-// =============================================================
 
 // creating a server
 app.listen(8080 || process.env.PORT);
