@@ -465,7 +465,7 @@ app.post('/product/create', function (req, res) {
         return false;
     }
     let id = generateId();
-    let { name, quantity, price } = req.body;
+    let { name, quantity, price } = req.query;
     let userId = auth.user.id;    //validate data 
     //check for a valid name
     if (!name) {
