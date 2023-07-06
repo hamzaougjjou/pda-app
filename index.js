@@ -455,7 +455,7 @@ app.post('/product/create', function (req, res) {
         });
         return false;
     }
-    if (auth.user.role != "seller" || auth.user.role != "admin") {
+    if (auth.user.role != "seller" && auth.user.role != "admin") {
         res.status(401).send(
             {
                 "success": false,
