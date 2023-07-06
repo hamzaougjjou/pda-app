@@ -75,7 +75,7 @@ app.post('/register', function (req, res) {
         );
         return 0;
     }
-    else if (password.trim().length < 6 ) {
+    else if (password.trim().length < 6) {
         res.status(404).send(
             {
                 "success": false,
@@ -172,44 +172,44 @@ app.post('/login', function (req, res) {
     let id = req.query.id
     let password = req.query.password;
 
-        //validate data 
-        if (!id) {
-            res.status(404).send(
-                {
-                    "success": false,
-                    "message": "id is required"
-                }
-            );
-            return 0;
-        }
-        else if (id.trim().length < 2) {
-            res.status(404).send(
-                {
-                    "success": false,
-                    "message": "invalid id"
-                }
-            );
-            return 0;
-        }
-        //validate data 
-        if (!password) {
-            res.status(404).send(
-                {
-                    "success": false,
-                    "message": "password is required"
-                }
-            );
-            return 0;
-        }
-        else if (password.trim().length < 6 ) {
-            res.status(404).send(
-                {
-                    "success": false,
-                    "message": "invalid password"
-                }
-            );
-            return 0;
-        }
+    //validate data 
+    if (!id) {
+        res.status(404).send(
+            {
+                "success": false,
+                "message": "id is required"
+            }
+        );
+        return 0;
+    }
+    else if (id.trim().length < 2) {
+        res.status(404).send(
+            {
+                "success": false,
+                "message": "invalid id"
+            }
+        );
+        return 0;
+    }
+    //validate data 
+    if (!password) {
+        res.status(404).send(
+            {
+                "success": false,
+                "message": "password is required"
+            }
+        );
+        return 0;
+    }
+    else if (password.trim().length < 6) {
+        res.status(404).send(
+            {
+                "success": false,
+                "message": "invalid password"
+            }
+        );
+        return 0;
+    }
 
     connection.query('select * from users where id=? and password=?'
         , [id, password]
@@ -326,8 +326,8 @@ app.delete('/seller/:id', function (req, res) {
 
     let sellerId = req.params.id;
 
-    connection.query( "delete from users where id=? and role='seller'" ,
-         [  sellerId ]
+    connection.query("delete from users where id=? and role='seller'",
+        [sellerId]
         , (error, results, fields) => {
             //data base unknow error
             if (error) {
@@ -411,12 +411,12 @@ app.get('/products', function (req, res) {
         });
         return false;
     }
-   
+
 
     let userId = auth.user.id;
 
-    let myDbQuery1 = "select * from products where created_by=? or seller_id=?";
-    connection.query(myDbQuery1, [ userId , userId ]
+    let myDbQuery1 = "select * from products where created_by=? ";
+    connection.query(myDbQuery1, [userId]
         , (error, results, fields) => {
             //data base unknow error
             if (error) {
@@ -438,6 +438,119 @@ app.get('/products', function (req, res) {
             // ======================================
 
         });
+})
+
+
+//create a new product by user
+app.post('/product/create', function (req, res) {
+
+
+    const auth = authenticateToken(req);
+
+    //check if user loged in
+    if (auth.status === false) {
+        res.status(401).json({
+            "success": false,
+            "message": "unauthenticated",
+        });
+        return false;
+    }
+    if (auth.user.role != "seller" || auth.user.role != "admin") {
+        res.status(401).send(
+            {
+                "success": false,
+                "message": "unautherized"
+            }
+        );
+        return false;
+    }
+    let id = generateId();
+    let { name, quantity, price } = req.body;
+    let userId = auth.user.id;    //validate data 
+    //check for a valid name
+    if (!name) {
+        res.status(404).send(
+            {
+                "success": false,
+                "message": "name is required"
+            }
+        );
+        return 0;
+    }
+    else if (name.trim().length < 1) {
+        res.status(404).send(
+            {
+                "success": false,
+                "message": "invalid name"
+            }
+        );
+        return 0;
+    }
+    //check for a valid price
+    if (!price) {
+        res.status(404).send(
+            {
+                "success": false,
+                "message": "price is required"
+            }
+        );
+        return 0;
+    } else if (isNaN(price) || price < 0) {
+        res.status(404).send(
+            {
+                "success": false,
+                "message": "invalid price"
+            }
+        );
+        return 0;
+    }
+    //check for a valid quantity
+    if (!quantity) {
+        res.status(404).send(
+            {
+                "success": false,
+                "message": "quantity is required"
+            }
+        );
+        return 0;
+    } else if (isNaN(quantity) || quantity < 0) {
+        res.status(404).send(
+            {
+                "success": false,
+                "message": "invalid quantity"
+            }
+        );
+        return 0;
+    }
+    // Assuming you want to return the URL as a response
+    let imageUrl = null;
+    
+    connection.query('INSERT INTO products (id,name,price,quantity,image,created_by) VALUES ( ? , ?  , ? , ? , ? , ? )'
+        , [id, name.trim(), price , quantity , imageUrl , userId ]
+        , (error, results, fields) => {
+            if (error) {
+                res.status(500).send(
+                    {
+                        "success": false,
+                        "message": "somthing went wrong"
+                    }
+                );
+                return false;
+            }
+
+            // if data inserted successfully
+            res.status(200).json({
+                "success": true,
+                "message": "data retrived successfully",
+                "user": auth.user,
+                'data': {
+                    ...req.body,
+                    "id": id,
+                    "image": imageUrl
+                }
+            })
+        });
+
 })
 
 // // upload file
