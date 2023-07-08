@@ -541,10 +541,10 @@ app.post('/product/create', function (req, res) {
             // if data inserted successfully
             res.status(200).json({
                 "success": true,
-                "message": "data retrived successfully",
+                "message": "product created successfully",
                 "user": auth.user,
-                'data': {
-                    ...req.body,
+                'product': {
+                    ...req.query,
                     "id": id,
                     "image": imageUrl
                 }
