@@ -681,95 +681,91 @@ app.post('/product/create', function (req, res) {
 // })
 
 // // delete product
-// app.delete('/product/:id', upload.single('image'), function (req, res) {
+app.delete('/product/:id' , function (req, res) {
+
+    const auth = authenticateToken(req);
+    //check if user loged in
+    if (auth.status === false) {
+        res.status(401).json({
+            "success": false,
+            "message": "unauthenticated",
+        });
+        return false;
+    }
+    if (auth.user.role != "seller") {
+        res.status(401).send(
+            {
+                "success": false,
+                "message": "unautherized"
+            }
+        );
+        return false;
+    }
+
+    let productId = req.params.id;
+    let userId = auth.user.id;
+    connection.query('select * from products where id=?'
+        , [productId]
+        , (error, results, fields) => {
+
+            //data base unknow error
+            if (error) {
+                res.status(500).send(
+                    {
+                        "success": false,
+                        "message": "somthing went wrong"
+                    }
+                );
+                return false;
+            }
+
+            //check if product not exists
+            if (results.length == 0) {
+                res.status(200).json({
+                    "success": false,
+                    "message": "product not found"
+                })
+                return false;
+            }
+
+            // check if if this product created by auth (current) user 
+            if (results[0].created_by != userId) {
+                res.status(401).send(
+                    {
+                        "success": false,
+                        "message": "unautherized to delete this product"
+                    }
+                );
+                return false;
+            }
 
 
-//     const auth = authenticateToken(req);
+            // delete product
+            // ======================================
+            connection.query('delete from products where id=? and ( created_by=? or seller_id=?)'
+                , [productId , userId , userId ]
+                , (error, results, fields) => {
+                    //data base unknown error
+                    if (error) {
+                        res.status(500).send(
+                            {
+                                "success": false,
+                                "message": "somthing went wrong"
+                            }
+                        );
+                        return false;
+                    }
 
+                    res.status(200).json({
+                        "success": true,
+                        "message": "product deleted successfully",
+                        "data": results
+                    })
+                })
+            // ======================================
 
-//     //check if user loged in
-//     if (auth.status === false) {
-//         res.status(401).json({
-//             "success": false,
-//             "message": "unauthenticated",
-//         });
-//         return false;
-//     }
-//     if (auth.user.role != "seller") {
-//         res.status(401).send(
-//             {
-//                 "success": false,
-//                 "message": "unautherized"
-//             }
-//         );
-//         return false;
-//     }
-
-//     let productId = req.params.id;
-//     let userId = auth.user.id;
-
-//     connection.query('select * from products where id=?'
-//         , [productId]
-//         , (error, results, fields) => {
-
-//             //data base unknow error
-//             if (error) {
-//                 res.status(500).send(
-//                     {
-//                         "success": false,
-//                         "message": "somthing went wrong"
-//                     }
-//                 );
-//                 return false;
-//             }
-
-//             //check if product not exists
-//             if (results.length == 0) {
-//                 res.status(200).json({
-//                     "success": false,
-//                     "message": "product not found"
-//                 })
-//                 return false;
-//             }
-
-//             // check if if this product created by auth (current) user 
-//             if (results[0].created_by != userId) {
-//                 res.status(401).send(
-//                     {
-//                         "success": false,
-//                         "message": "unautherized to delete this product"
-//                     }
-//                 );
-//                 return false;
-//             }
-
-
-//             // delete product
-//             // ======================================
-//             connection.query('delete from products where id=?'
-//                 , [productId]
-//                 , (error, results, fields) => {
-//                     //data base unknow error
-//                     if (error) {
-//                         res.status(500).send(
-//                             {
-//                                 "success": false,
-//                                 "message": "somthing went wrong"
-//                             }
-//                         );
-//                         return false;
-//                     }
-
-//                     res.status(200).json({
-//                         "success": true,
-//                         "message": "product deleted successfully",
-//                         "data": results
-//                     })
-//                 })
-//             // ======================================
-
-//         });
-// })
+        });
+})
 
 // //get a single product item
 // app.get('/product/:id', upload.single('image'), function (req, res) {
