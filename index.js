@@ -692,7 +692,7 @@ app.delete('/product/:id' , function (req, res) {
         });
         return false;
     }
-    if (auth.user.role != "seller") {
+    if (auth.user.role != "seller" || auth.user.role != "admin" ) {
         res.status(401).send(
             {
                 "success": false,
