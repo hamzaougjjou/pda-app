@@ -845,7 +845,7 @@ app.get('/company/info', function (req, res) {
 
     let comdanyId = auth.user.company_id ;
 
-    let myDbQuery1 = "select * from company where id=? linmit 1";
+    let myDbQuery1 = "select * from company where id=? limit 1";
     connection.query(myDbQuery1, [comdanyId]
         , (error, results, fields) => {
             //data base unknow error
@@ -853,7 +853,7 @@ app.get('/company/info', function (req, res) {
                 res.status(500).send(
                     {
                         "success": false,
-                        "message": "somthing went wrong"
+                        "message": "somtehing went wrong"
                     }
                 );
                 return false;
