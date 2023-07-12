@@ -820,8 +820,54 @@ app.delete('/product/:id' , function (req, res) {
 
 //create an order
 app.post('/order/create', function (req, res) {
-
     res.status(200).send(req.body);
+})
+
+//get company information
+app.get('/company/info', function (req, res) {
+    const auth = authenticateToken(req);
+    //check if user loged in
+    if (auth.status === false) {
+        res.status(401).json({
+            "success": false,
+            "message": "unauthenticated",
+        });
+        return false;
+    }
+    if ( auth.user.role != "admin" ) {
+        res.status(401).json({
+            "success": false,
+            "message": "unautherized",
+        });
+        return false;
+    }
+
+
+    let comdanyId = auth.user.company_id ;
+
+    let myDbQuery1 = "select * from company where id=? linmit 1";
+    connection.query(myDbQuery1, [comdanyId]
+        , (error, results, fields) => {
+            //data base unknow error
+            if (error) {
+                res.status(500).send(
+                    {
+                        "success": false,
+                        "message": "somthing went wrong"
+                    }
+                );
+                return false;
+            }
+
+            res.status(200).json({
+                "success": true,
+                "message": "company info retrieved successfully",
+                "data": results
+            })
+
+            // ======================================
+
+        });
 })
 
 //generate a login token
