@@ -524,9 +524,9 @@ app.post('/product/create', function (req, res) {
     }
     // Assuming you want to return the URL as a response
     let imageUrl = null;
-    
+
     connection.query('INSERT INTO products (id,name,price,quantity,image,created_by) VALUES ( ? , ?  , ? , ? , ? , ? )'
-        , [id, name.trim(), price , quantity , imageUrl , userId ]
+        , [id, name.trim(), price, quantity, imageUrl, userId]
         , (error, results, fields) => {
             if (error) {
                 res.status(500).send(
@@ -681,7 +681,7 @@ app.post('/product/create', function (req, res) {
 // })
 
 // // delete product
-app.delete('/product/:id' , function (req, res) {
+app.put('/product/:id', function (req, res) {
 
     const auth = authenticateToken(req);
     //check if user loged in
@@ -692,7 +692,97 @@ app.delete('/product/:id' , function (req, res) {
         });
         return false;
     }
-    if (auth.user.role != "seller" && auth.user.role != "admin" ) {
+    if (auth.user.role != "seller" && auth.user.role != "admin") {
+        res.status(401).send(
+            {
+                "success": false,
+                "message": "unautherized"
+            }
+        );
+        return false;
+    }
+
+    let productId = req.params.id;
+    let userId = auth.user.id;
+
+    let name = req.query.name;
+    let price = req.query.price;
+    let quantity = req.query.quantity;
+    
+    connection.query('select * from products where id=?'
+        , [productId]
+        , (error, results, fields) => {
+
+            //data base unknow error
+            if (error) {
+                res.status(500).send(
+                    {
+                        "success": false,
+                        "message": "somthing went wrong"
+                    }
+                );
+                return false;
+            }
+
+            //check if product not exists
+            if (results.length == 0) {
+                res.status(200).json({
+                    "success": false,
+                    "message": "product not found"
+                })
+                return false;
+            }
+
+            // check if if this product created by auth (current) user 
+            if ( !(results[0].created_by == userId || results[0].seller_id == userId) ) {
+                res.status(401).send(
+                    {
+                        "success": false,
+                        "message": "unautherized to update this product"
+                    }
+                );
+                return false;
+            }
+
+            // delete product
+            // ======================================
+            connection.query("update products set name=? , price=? , quantity=? where id=?"
+                , [ name , price , quantity , productId]
+                , (error, results, fields) => {
+                    //data base unknown error
+                    if (error) {
+                        res.status(500).send(
+                            {
+                                "success": false,
+                                "message": "somthing went wrong"
+                            }
+                        );
+                        return false;
+                    }
+
+                    res.status(200).json({
+                        "success": true,
+                        "message": "product updated successfully",
+                        "data": results
+                    })
+                })
+            // ======================================
+
+        });
+})
+// // delete product
+app.delete('/product/:id', function (req, res) {
+
+    const auth = authenticateToken(req);
+    //check if user loged in
+    if (auth.status === false) {
+        res.status(401).json({
+            "success": false,
+            "message": "unauthenticated",
+        });
+        return false;
+    }
+    if (auth.user.role != "seller" && auth.user.role != "admin") {
         res.status(401).send(
             {
                 "success": false,
@@ -743,7 +833,7 @@ app.delete('/product/:id' , function (req, res) {
             // delete product
             // ======================================
             connection.query('delete from products where id=? and ( created_by=? or seller_id=?)'
-                , [productId , userId , userId ]
+                , [productId, userId, userId]
                 , (error, results, fields) => {
                     //data base unknown error
                     if (error) {
@@ -834,7 +924,7 @@ app.get('/company/info', function (req, res) {
         });
         return false;
     }
-    if ( auth.user.role != "admin" ) {
+    if (auth.user.role != "admin") {
         res.status(401).json({
             "success": false,
             "message": "unautherized",
@@ -843,7 +933,7 @@ app.get('/company/info', function (req, res) {
     }
 
 
-    let comdanyId = auth.user.company_id ;
+    let comdanyId = auth.user.company_id;
 
     let myDbQuery1 = "select * from company where id=? limit 1";
     connection.query(myDbQuery1, [comdanyId]
@@ -862,6 +952,68 @@ app.get('/company/info', function (req, res) {
             res.status(200).json({
                 "success": true,
                 "message": "company info retrieved successfully",
+                "data": results[0]
+            })
+
+            // ======================================
+
+        });
+})
+//update company information
+app.put('/company/update', function (req, res) {
+    const auth = authenticateToken(req);
+    //check if user loged in
+    if (auth.status === false) {
+        res.status(401).json({
+            "success": false,
+            "message": "unauthenticated",
+        });
+        return false;
+    }
+    if (auth.user.role != "admin") {
+        res.status(401).json({
+            "success": false,
+            "message": "unautherized",
+        });
+        return false;
+    }
+
+
+    let comdanyId = auth.user.company_id;
+
+    let companyName = req.query.name ? req.query.name : null;
+    let companyAddress = req.query.address ? req.query.address : null ;
+    let companyPhone = req.query.phone ? req.query.phone : null ;
+    let companyLogo = req.query.logo;
+
+    if ( companyName === null ) {
+        res.status(500).json({
+            "success": false,
+            "message": "company name is required",
+        });
+        return false;
+    }
+
+    let myDbQuery = "update company set name=? , address=? , phone=? , logo=? where id=?";
+    let params = [companyName , companyAddress , companyPhone , companyLogo , comdanyId];
+
+
+    connection.query(myDbQuery, params,
+        (error, results, fields) => {
+            //data base unknow error
+            if (error) {
+                res.status(500).send(
+                    {
+                        "success": false,
+                        "message": "somtehing went wrong"
+                    }
+                );
+                return false;
+            }
+
+            res.status(200).json({
+                "success": true,
+                "message": "company info updated successfully",
                 "data": results[0]
             })
 
