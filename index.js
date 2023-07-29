@@ -414,9 +414,9 @@ app.get('/products', function (req, res) {
 
 
     let userId = auth.user.id;
-
-    let myDbQuery1 = "select * from products where created_by=? ";
-    connection.query(myDbQuery1, [userId]
+    let q = req.query.q;
+    let myDbQuery1 = "select * from products where (created_by=? or seller_id=?) and (name like '%' ? '%' or id like '%' ? '%' )";
+    connection.query(myDbQuery1, [ userId , userId , q , q ]
         , (error, results, fields) => {
             //data base unknow error
             if (error) {
