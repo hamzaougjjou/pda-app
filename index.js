@@ -537,7 +537,7 @@ app.put('/user/:id', function (req, res) {
     let userId = req.params.id;
     let  name = req.query.name;
     let  password = req.query.password;
-    let  phone = req.query.password;
+    let  phone = req.query.phone;
 
     if ( !name || name.trim().length < 1 ) {
         res.status(500).send(
@@ -560,12 +560,13 @@ app.put('/user/:id', function (req, res) {
 
 
     let parameters = [name , password , userId];
-    let q = "update users set name=? , password=? where id=?  and role='seller' ";
+    let q = "update users set name=? , password=? where id=?";
     
     if ( phone ) {
-        let q = "update users set name=? , password=? ,phone=? where id=?  and role='seller' ";
+        q = "update users set name=? , password=? , phone=? where id=?";
         parameters = [name , password , phone , userId];
     }
+    
     connection.query( q , parameters
         , (error, results, fields) => {
             //data base unknow error
@@ -581,7 +582,8 @@ app.put('/user/:id', function (req, res) {
 
             res.status(200).json({
                 "success": true,
-                "message": "seller updated successfully"
+                "message": "seller updated successfully",
+                "result": results
             })
 
             // ======================================
