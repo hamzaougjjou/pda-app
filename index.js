@@ -401,6 +401,194 @@ app.get('/sellers', function (req, res) {
         });
 })
 
+//create a new product by user
+app.post('/seller/create', function (req, res) {
+
+    const auth = authenticateToken(req);
+
+    //check if user loged in
+    if (auth.status === false) {
+        res.status(401).json({
+            "success": false,
+            "message": "unauthenticated",
+        });
+        return false;
+    }
+    if (auth.user.role != "admin") {
+        res.status(401).send(
+            {
+                "success": false,
+                "message": "unautherized"
+            }
+        );
+        return false;
+    }
+
+    let id = generateId();
+    let { name, quantity, price } = req.query;
+    let userId = auth.user.id;    //validate data 
+    //check for a valid name
+    if (!name) {
+        res.status(404).send(
+            {
+                "success": false,
+                "message": "name is required"
+            }
+        );
+        return 0;
+    }
+    else if (name.trim().length < 1) {
+        res.status(404).send(
+            {
+                "success": false,
+                "message": "invalid name"
+            }
+        );
+        return 0;
+    }
+    //check for a valid price
+    if (!price) {
+        res.status(404).send(
+            {
+                "success": false,
+                "message": "price is required"
+            }
+        );
+        return 0;
+    } else if (isNaN(price) || price < 0) {
+        res.status(404).send(
+            {
+                "success": false,
+                "message": "invalid price"
+            }
+        );
+        return 0;
+    }
+    //check for a valid quantity
+    if (!quantity) {
+        res.status(404).send(
+            {
+                "success": false,
+                "message": "quantity is required"
+            }
+        );
+        return 0;
+    } else if (isNaN(quantity) || quantity < 0) {
+        res.status(404).send(
+            {
+                "success": false,
+                "message": "invalid quantity"
+            }
+        );
+        return 0;
+    }
+    // Assuming you want to return the URL as a response
+    let imageUrl = null;
+
+    connection.query('INSERT INTO products (id,name,price,quantity,image,created_by) VALUES ( ? , ?  , ? , ? , ? , ? )'
+        , [id, name.trim(), price, quantity, imageUrl, userId]
+        , (error, results, fields) => {
+            if (error) {
+                res.status(500).send(
+                    {
+                        "success": false,
+                        "message": "somthing went wrong"
+                    }
+                );
+                return false;
+            }
+
+            // if data inserted successfully
+            res.status(200).json({
+                "success": true,
+                "message": "product created successfully",
+                "user": auth.user,
+                'product': {
+                    ...req.query,
+                    "id": id,
+                    "image": imageUrl
+                }
+            })
+        });
+
+})
+
+//update a seller by admin
+app.put('/seller/:id', function (req, res) {
+    const auth = authenticateToken(req);
+    //check if user loged in
+    if (auth.status === false) {
+        res.status(401).json({
+            "success": false,
+            "message": "unauthenticated",
+        });
+        return false;
+    }
+    if (auth.user.role != "admin") {
+        res.status(401).send(
+            {
+                "success": false,
+                "message": "unautherized"
+            }
+        );
+        return false;
+    }
+
+    let sellerId = req.params.id;
+    let  name = req.query.name;
+    let  password = req.query.password;
+    let  phone = req.query.password;
+
+    if ( !name || name.trim().length < 1 ) {
+        res.status(500).send(
+            {
+                "success": false,
+                "message": "invalid name"
+            }
+        );
+        return false;
+    }
+    if ( !password || password.trim().length < 6 ) {
+        res.status(500).send(
+            {
+                "success": false,
+                "message": "invalid password"
+            }
+        );
+        return false;
+    }
+
+
+    let parameters = [name , password , sellerId];
+    let q = "update users set name=? , password=? where id=?  and role='seller' ";
+    
+    if ( phone ) {
+        let q = "update users set name=? , password=? ,phone=? where id=?  and role='seller' ";
+        parameters = [name , password , phone , sellerId];
+    }
+    connection.query( q , parameters
+        , (error, results, fields) => {
+            //data base unknow error
+            if (error) {
+                res.status(500).send(
+                    {
+                        "success": false,
+                        "message": "somthing went wrong"
+                    }
+                );
+                return false;
+            }
+
+            res.status(200).json({
+                "success": true,
+                "message": "seller updated successfully"
+            })
+
+            // ======================================
+
+        });
+})
+
 app.get('/products', function (req, res) {
     const auth = authenticateToken(req);
     //check if user loged in
@@ -416,7 +604,7 @@ app.get('/products', function (req, res) {
     let userId = auth.user.id;
     let q = req.query.q;
     let myDbQuery1 = "select * from products where (created_by=? or seller_id=?) and (name like '%' ? '%' or id like '%' ? '%' )";
-    connection.query(myDbQuery1, [ userId , userId , q , q ]
+    connection.query(myDbQuery1, [userId, userId, q, q]
         , (error, results, fields) => {
             //data base unknow error
             if (error) {
@@ -553,132 +741,6 @@ app.post('/product/create', function (req, res) {
 
 })
 
-// // upload file
-// let storagePath = 'uploads/images/products'
-// const storage = multer.diskStorage({
-//     destination: storagePath,
-//     filename: function (req, file, cb) {
-//         const uniqueSuffix = Date.now() + generateId() + Math.round(Math.random() * 1E9);
-//         const fileExtension = path.extname(file.originalname);
-//         const newFilename = 'image_' + uniqueSuffix + fileExtension;
-//         cb(null, newFilename);
-//     }
-// });
-// const upload = multer({ storage: storage });
-
-// //create a new product by user
-// app.post('/product/create', upload.single('image'), function (req, res) {
-
-
-//     const auth = authenticateToken(req);
-
-//     //check if user loged in
-//     if (auth.status === false) {
-//         res.status(401).json({
-//             "success": false,
-//             "message": "unauthenticated",
-//         });
-//         return false;
-//     }
-//     if (auth.user.role != "seller") {
-//         res.status(401).send(
-//             {
-//                 "success": false,
-//                 "message": "unautherized"
-//             }
-//         );
-//         return false;
-//     }
-//     let id = generateId();
-//     let { name, quantity, price } = req.body;
-//     let userId = auth.user.id;    //validate data 
-//     //check for a valid name
-//     if (!name) {
-//         res.status(404).send(
-//             {
-//                 "success": false,
-//                 "message": "name is required"
-//             }
-//         );
-//         return 0;
-//     }
-//     else if (name.trim().length < 1) {
-//         res.status(404).send(
-//             {
-//                 "success": false,
-//                 "message": "invalid name"
-//             }
-//         );
-//         return 0;
-//     }
-//     //check for a valid price
-//     if (!price) {
-//         res.status(404).send(
-//             {
-//                 "success": false,
-//                 "message": "price is required"
-//             }
-//         );
-//         return 0;
-//     } else if (isNaN(price) || price < 0) {
-//         res.status(404).send(
-//             {
-//                 "success": false,
-//                 "message": "invalid price"
-//             }
-//         );
-//         return 0;
-//     }
-//     //check for a valid quantity
-//     if (!quantity) {
-//         res.status(404).send(
-//             {
-//                 "success": false,
-//                 "message": "quantity is required"
-//             }
-//         );
-//         return 0;
-//     } else if (isNaN(quantity) || quantity < 0) {
-//         res.status(404).send(
-//             {
-//                 "success": false,
-//                 "message": "invalid quantity"
-//             }
-//         );
-//         return 0;
-//     }
-//     // Assuming you want to return the URL as a response
-//     let imageUrl = null;
-//     if (req.file)
-//         imageUrl = req.file.path;
-
-//     connection.query('INSERT INTO products (id,name,price,quantity,image,created_by) VALUES ( ? , ?  , ? , ? , ? , ? )'
-//         , [id, name.trim(), price, quantity, imageUrl, userId]
-//         , (error, results, fields) => {
-//             if (error) {
-//                 res.status(500).send(
-//                     {
-//                         "success": false,
-//                         "message": "somthing went wrong"
-//                     }
-//                 );
-//                 return false;
-//             }
-
-//             // if data inserted successfully
-//             res.status(200).json({
-//                 "success": true,
-//                 "message": "data retrived successfully",
-//                 "user": auth.user,
-//                 'data': {
-//                     ...req.body,
-//                     "id": id,
-//                     "image": imageUrl
-//                 }
-//             })
-//         });
-
-// })
 
 // // delete product
 app.put('/product/:id', function (req, res) {
@@ -708,7 +770,7 @@ app.put('/product/:id', function (req, res) {
     let name = req.query.name;
     let price = req.query.price;
     let quantity = req.query.quantity;
-    
+
     connection.query('select * from products where id=?'
         , [productId]
         , (error, results, fields) => {
@@ -734,7 +796,7 @@ app.put('/product/:id', function (req, res) {
             }
 
             // check if if this product created by auth (current) user 
-            if ( !(results[0].created_by == userId || results[0].seller_id == userId) ) {
+            if (!(results[0].created_by == userId || results[0].seller_id == userId)) {
                 res.status(401).send(
                     {
                         "success": false,
@@ -747,7 +809,7 @@ app.put('/product/:id', function (req, res) {
             // delete product
             // ======================================
             connection.query("update products set name=? , price=? , quantity=? where id=?"
-                , [ name , price , quantity , productId]
+                , [name, price, quantity, productId]
                 , (error, results, fields) => {
                     //data base unknown error
                     if (error) {
@@ -857,57 +919,6 @@ app.delete('/product/:id', function (req, res) {
         });
 })
 
-// //get a single product item
-// app.get('/product/:id', upload.single('image'), function (req, res) {
-
-
-//     const auth = authenticateToken(req);
-
-//     //check if user loged in
-//     if (auth.status === false) {
-//         res.status(401).json({
-//             "success": false,
-//             "message": "unauthenticated",
-//         });
-//         return false;
-//     }
-
-//     let productId = req.params.id;
-
-//     connection.query('select * from products where id=?'
-//         , [productId]
-//         , (error, results, fields) => {
-
-//             //data base unknow error
-//             if (error) {
-//                 res.status(500).send(
-//                     {
-//                         "success": false,
-//                         "message": "somthing went wrong"
-//                     }
-//                 );
-//                 return false;
-//             }
-
-//             //check if product not exists
-//             if (results.length == 0) {
-//                 res.status(200).json({
-//                     "success": false,
-//                     "message": "product not found"
-//                 })
-//                 return false;
-//             }
-
-//             res.status(200).json({
-//                 "success": true,
-//                 "message": "product deleted successfully",
-//                 "product": results[0]
-//             })
-
-//             // ======================================
-//         });
-// })
-
 //create an order
 app.post('/order/create', function (req, res) {
     res.status(200).send(req.body);
@@ -959,6 +970,7 @@ app.get('/company/info', function (req, res) {
 
         });
 })
+
 //update company information
 app.put('/company/update', function (req, res) {
     const auth = authenticateToken(req);
@@ -982,11 +994,11 @@ app.put('/company/update', function (req, res) {
     let comdanyId = auth.user.company_id;
 
     let companyName = req.query.name ? req.query.name : null;
-    let companyAddress = req.query.address ? req.query.address : null ;
-    let companyPhone = req.query.phone ? req.query.phone : null ;
+    let companyAddress = req.query.address ? req.query.address : null;
+    let companyPhone = req.query.phone ? req.query.phone : null;
     let companyLogo = req.query.logo;
 
-    if ( companyName === null ) {
+    if (companyName === null) {
         res.status(500).json({
             "success": false,
             "message": "company name is required",
@@ -995,7 +1007,7 @@ app.put('/company/update', function (req, res) {
     }
 
     let myDbQuery = "update company set name=? , address=? , phone=? , logo=? where id=?";
-    let params = [companyName , companyAddress , companyPhone , companyLogo , comdanyId];
+    let params = [companyName, companyAddress, companyPhone, companyLogo, comdanyId];
 
 
     connection.query(myDbQuery, params,
