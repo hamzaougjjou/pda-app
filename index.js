@@ -514,7 +514,7 @@ app.post('/seller/create', function (req, res) {
 })
 
 //update a seller by admin
-app.put('/seller/:id', function (req, res) {
+app.put('/user/:id', function (req, res) {
     const auth = authenticateToken(req);
     //check if user loged in
     if (auth.status === false) {
@@ -534,7 +534,7 @@ app.put('/seller/:id', function (req, res) {
         return false;
     }
 
-    let sellerId = req.params.id;
+    let userId = req.params.id;
     let  name = req.query.name;
     let  password = req.query.password;
     let  phone = req.query.password;
@@ -559,12 +559,12 @@ app.put('/seller/:id', function (req, res) {
     }
 
 
-    let parameters = [name , password , sellerId];
+    let parameters = [name , password , userId];
     let q = "update users set name=? , password=? where id=?  and role='seller' ";
     
     if ( phone ) {
         let q = "update users set name=? , password=? ,phone=? where id=?  and role='seller' ";
-        parameters = [name , password , phone , sellerId];
+        parameters = [name , password , phone , userId];
     }
     connection.query( q , parameters
         , (error, results, fields) => {
