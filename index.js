@@ -304,7 +304,7 @@ app.get('/clients', function (req, res) {
 })
 
 //delete a seller by admin
-app.delete('/seller/:id', function (req, res) {
+app.delete('/user/:id', function (req, res) {
     const auth = authenticateToken(req);
     //check if user loged in
     if (auth.status === false) {
@@ -314,7 +314,7 @@ app.delete('/seller/:id', function (req, res) {
         });
         return false;
     }
-    if (auth.user.role != "admin") {
+    if (auth.user.role != "admin" && auth.user.role !="seller") {
         res.status(401).send(
             {
                 "success": false,
@@ -326,7 +326,7 @@ app.delete('/seller/:id', function (req, res) {
 
     let sellerId = req.params.id;
 
-    connection.query("delete from users where id=? and role='seller'",
+    connection.query("delete from users where id=? and role!='admin'",
         [sellerId]
         , (error, results, fields) => {
             //data base unknow error
