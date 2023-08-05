@@ -6,14 +6,15 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const bodyParser = require('body-parser');
 const mysql = require('mysql');;
-const multer = require('multer');
-const path = require("path");
+// const multer = require('multer');
+// const path = require("path");
 const app = express();
-require('dotenv').config()
+require('dotenv').config();
 
-
+//convert data cams from user to JSON
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+//allow to all devices to send and recieve requests from this server(url)
 app.use(cors());
 
 // connect to mySql database
@@ -401,7 +402,7 @@ app.get('/sellers', function (req, res) {
         });
 })
 
-//create a new product by user
+//create a new user by user
 app.post('/seller/create', function (req, res) {
 
     const auth = authenticateToken(req);
@@ -425,11 +426,11 @@ app.post('/seller/create', function (req, res) {
     }
 
     let id = generateId();
-    let { name, quantity, price } = req.query;
-    let userId = auth.user.id;    //validate data 
+    let { name, phone, password } = req.query;
+    let userId = auth.user.id ;    //validate data 
     //check for a valid name
     if (!name) {
-        res.status(404).send(
+        res.status(400).send(
             {
                 "success": false,
                 "message": "name is required"
@@ -438,7 +439,7 @@ app.post('/seller/create', function (req, res) {
         return 0;
     }
     else if (name.trim().length < 1) {
-        res.status(404).send(
+        res.status(400).send(
             {
                 "success": false,
                 "message": "invalid name"
@@ -447,46 +448,35 @@ app.post('/seller/create', function (req, res) {
         return 0;
     }
     //check for a valid price
-    if (!price) {
-        res.status(404).send(
+    if (!password) {
+        res.status(400).send(
             {
                 "success": false,
-                "message": "price is required"
+                "message": "password is required"
             }
         );
         return 0;
-    } else if (isNaN(price) || price < 0) {
-        res.status(404).send(
+    } else if ( password.length < 6 ) {
+        res.status(400).send(
             {
                 "success": false,
-                "message": "invalid price"
-            }
-        );
-        return 0;
-    }
-    //check for a valid quantity
-    if (!quantity) {
-        res.status(404).send(
-            {
-                "success": false,
-                "message": "quantity is required"
-            }
-        );
-        return 0;
-    } else if (isNaN(quantity) || quantity < 0) {
-        res.status(404).send(
-            {
-                "success": false,
-                "message": "invalid quantity"
+                "message": "invalid password"
             }
         );
         return 0;
     }
-    // Assuming you want to return the URL as a response
-    let imageUrl = null;
 
-    connection.query('INSERT INTO products (id,name,price,quantity,image,created_by) VALUES ( ? , ?  , ? , ? , ? , ? )'
-        , [id, name.trim(), price, quantity, imageUrl, userId]
+    if ( !phone ) {
+        phone = null;
+    }
+   
+    let role = 'seller';
+    if ( auth.user.role.toLocaleLowerCase() == "seller") {
+        role = "client";
+    }
+
+    connection.query('INSERT INTO users (id,name,phone,password,role,created_by) VALUES ( ? , ?  , ? , ? , ? , ? )'
+        , [id, name.trim(), phone, password , role , userId]
         , (error, results, fields) => {
             if (error) {
                 res.status(500).send(
@@ -501,12 +491,10 @@ app.post('/seller/create', function (req, res) {
             // if data inserted successfully
             res.status(200).json({
                 "success": true,
-                "message": "product created successfully",
-                "user": auth.user,
-                'product': {
+                "message": "user created successfully",
+                'user': {
                     ...req.query,
                     "id": id,
-                    "image": imageUrl
                 }
             })
         });
