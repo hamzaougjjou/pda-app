@@ -403,7 +403,7 @@ app.get('/sellers', function (req, res) {
 })
 
 //create a new user by user
-app.post('/seller/create', function (req, res) {
+app.post('/user/create', function (req, res) {
 
     const auth = authenticateToken(req);
 
