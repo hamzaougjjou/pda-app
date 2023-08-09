@@ -714,7 +714,7 @@ app.put('/auth/:id', function (req, res) {
                     }
 
                     let user = {
-                        ...user,
+                        ...results1[0],
                         "name":name
                     }
                     if ( phone ) {
