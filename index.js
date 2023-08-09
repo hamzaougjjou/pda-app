@@ -716,7 +716,7 @@ app.put('/auth/:id', function (req, res) {
                     res.status(200).json({
                         "success": true,
                         "message": "user updated successfully",
-                        "result": results2
+                        "result": results1
                     })
 
                 });
