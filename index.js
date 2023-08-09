@@ -713,10 +713,21 @@ app.put('/auth/:id', function (req, res) {
                         return false;
                     }
 
+                    let user = {
+                        ...user,
+                        "name":name
+                    }
+                    if ( phone ) {
+                        user = {
+                            ...user ,
+                            "phone":phone
+                        }
+                    }
+
                     res.status(200).json({
                         "success": true,
                         "message": "user updated successfully",
-                        "result": results1
+                        "user": user
                     })
 
                 });
