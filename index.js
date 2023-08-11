@@ -8,7 +8,7 @@ const bodyParser = require('body-parser');
 const mysql = require('mysql');;
 // const multer = require('multer');
 // const path = require("path");
-const app = express(); 
+const app = express();
 require('dotenv').config();
 
 //convert data cams from user to JSON
@@ -189,13 +189,13 @@ app.put('/auth/password', function (req, res) {
         return false;
     }
 
-    let userId = req.params.id;
+    let userId = auth.user.id;
 
-    let password = req.query.password;
+    let oldPassword = req.query.oldPassword;
     let newPassword = req.query.newPassword;
-    let confirmNewPassword  = req.query.confirmNewPassword;
+    let confirmNewPassword = req.query.confirmNewPassword;
 
-    if (!password || password.trim().length < 6) {
+    if (!oldPassword || oldPassword.trim().length < 6) {
         res.status(200).send(
             {
                 "success": false,
@@ -204,17 +204,7 @@ app.put('/auth/password', function (req, res) {
         );
         return false;
     }
-
-    if ( oldPassword.length() < 6 ){
-        res.status(200).send(
-            {
-                "success": false,
-                "message": "invalid password"
-            }
-        );
-        return false;
-    }
-    if ( newPassword.length() < 6 ){
+    if (!oldPassword) {
         res.status(200).send(
             {
                 "success": false,
@@ -223,7 +213,34 @@ app.put('/auth/password', function (req, res) {
         );
         return false;
     }
-    if ( confirmNewPassword.length() < 6 ){
+    if (oldPassword.length < 6) {
+        res.status(200).send(
+            {
+                "success": false,
+                "message": "invalid password"
+            }
+        );
+        return false;
+    }
+    if ( !newPassword ){
+        res.status(200).send(
+            {
+                "success": false,
+                "message": "invalid new password"
+            }
+        );
+        return false;
+    }
+    if (newPassword.length < 6) {
+        res.status(200).send(
+            {
+                "success": false,
+                "message": "invalid new password"
+            }
+        );
+        return false;
+    }
+    if (!confirmNewPassword) {
         res.status(200).send(
             {
                 "success": false,
@@ -232,7 +249,16 @@ app.put('/auth/password', function (req, res) {
         );
         return false;
     }
-    if ( newPassword != confirmNewPassword ){
+    if (confirmNewPassword.length < 6) {
+        res.status(200).send(
+            {
+                "success": false,
+                "message": "invalid confirm new password"
+            }
+        );
+        return false;
+    }
+    if (newPassword != confirmNewPassword) {
         res.status(200).send(
             {
                 "success": false,
@@ -244,7 +270,7 @@ app.put('/auth/password', function (req, res) {
 
     connection.query("select * from users where ( id=? and password=? ) "
         ,
-        [userId, password]
+        [userId, oldPassword]
         , (error1, results1, fields1) => {
             //data base unknow error
             if (error1) {
@@ -267,8 +293,8 @@ app.put('/auth/password', function (req, res) {
                 );
                 return false;
             }
-            connection.query( "update users set password=? where  id=?",
-             [ userId , password]
+            connection.query("update users set password=? where  id=?",
+                [newPassword , userId ]
                 , (error2, results2, fields3) => {
                     //data base unknow error
                     if (error2) {
@@ -440,7 +466,7 @@ app.delete('/user/:id', function (req, res) {
         });
         return false;
     }
-    if (auth.user.role != "admin" && auth.user.role !="seller") {
+    if (auth.user.role != "admin" && auth.user.role != "seller") {
         res.status(401).send(
             {
                 "success": false,
@@ -552,7 +578,7 @@ app.post('/user/create', function (req, res) {
 
     let id = generateId();
     let { name, phone, password } = req.query;
-    let userId = auth.user.id ;    //validate data 
+    let userId = auth.user.id;    //validate data 
     //check for a valid name
     if (!name) {
         res.status(400).send(
@@ -581,7 +607,7 @@ app.post('/user/create', function (req, res) {
             }
         );
         return 0;
-    } else if ( password.length < 6 ) {
+    } else if (password.length < 6) {
         res.status(400).send(
             {
                 "success": false,
@@ -591,17 +617,17 @@ app.post('/user/create', function (req, res) {
         return 0;
     }
 
-    if ( !phone ) {
+    if (!phone) {
         phone = null;
     }
-   
+
     let role = 'seller';
-    if ( auth.user.role.toLocaleLowerCase() == "seller") {
+    if (auth.user.role.toLocaleLowerCase() == "seller") {
         role = "client";
     }
 
     connection.query('INSERT INTO users (id,name,phone,password,role,created_by) VALUES ( ? , ?  , ? , ? , ? , ? )'
-        , [id, name.trim(), phone, password , role , userId]
+        , [id, name.trim(), phone, password, role, userId]
         , (error, results, fields) => {
             if (error) {
                 res.status(500).send(
@@ -637,7 +663,7 @@ app.put('/user/:id', function (req, res) {
         });
         return false;
     }
-    if (auth.user.role != "admin" && auth.user.role != "seller" ) {
+    if (auth.user.role != "admin" && auth.user.role != "seller") {
         res.status(401).send(
             {
                 "success": false,
@@ -648,11 +674,11 @@ app.put('/user/:id', function (req, res) {
     }
 
     let userId = req.params.id;
-    let  name = req.query.name;
-    let  password = req.query.password;
-    let  phone = req.query.phone;
+    let name = req.query.name;
+    let password = req.query.password;
+    let phone = req.query.phone;
 
-    if ( !name || name.trim().length < 1 ) {
+    if (!name || name.trim().length < 1) {
         res.status(500).send(
             {
                 "success": false,
@@ -662,7 +688,7 @@ app.put('/user/:id', function (req, res) {
         return false;
     }
 
-    if ( !password || password.trim().length < 6 ) {
+    if (!password || password.trim().length < 6) {
         res.status(500).send(
             {
                 "success": false,
@@ -673,15 +699,15 @@ app.put('/user/:id', function (req, res) {
     }
 
 
-    let parameters = [name , password , userId];
+    let parameters = [name, password, userId];
     let q = "update users set name=? , password=? where id=?";
-    
-    if ( phone ) {
+
+    if (phone) {
         q = "update users set name=? , password=? , phone=? where id=?";
-        parameters = [name , password , phone , userId];
+        parameters = [name, password, phone, userId];
     }
-    
-    connection.query( q , parameters
+
+    connection.query(q, parameters
         , (error, results, fields) => {
             //data base unknow error
             if (error) {
@@ -839,12 +865,12 @@ app.put('/auth/:id', function (req, res) {
 
                     let user = {
                         ...results1[0],
-                        "name":name
+                        "name": name
                     }
-                    if ( phone ) {
+                    if (phone) {
                         user = {
-                            ...user ,
-                            "phone":phone
+                            ...user,
+                            "phone": phone
                         }
                     }
 
