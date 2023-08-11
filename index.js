@@ -168,7 +168,6 @@ app.post('/register', function (req, res) {
     }
 })
 
-
 //update a auth user password
 app.put('/auth/password', function (req, res) {
     const auth = authenticateToken(req);
@@ -249,7 +248,7 @@ app.put('/auth/password', function (req, res) {
         , (error1, results1, fields1) => {
             //data base unknow error
             if (error1) {
-                res.status(500).send(
+                res.status(200).send(
                     {
                         "success": false,
                         "message": "somthing went wrong"
@@ -268,12 +267,12 @@ app.put('/auth/password', function (req, res) {
                 );
                 return false;
             }
-            connection.query( "update users set password=? where id=?",
+            connection.query( "update users set password=? where  id=?",
              [ userId , password]
                 , (error2, results2, fields3) => {
                     //data base unknow error
                     if (error2) {
-                        res.status(500).send(
+                        res.status(200).send(
                             {
                                 "success": false,
                                 "message": "somthing went wrong"
