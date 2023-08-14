@@ -566,7 +566,7 @@ app.post('/user/create', function (req, res) {
         });
         return false;
     }
-    if (auth.user.role != "admin") {
+    if (auth.user.role != "admin" && auth.user.role !="seller" ) {
         res.status(401).send(
             {
                 "success": false,
@@ -606,7 +606,7 @@ app.post('/user/create', function (req, res) {
                 "message": "password is required"
             }
         );
-        return 0;
+        return 0; 
     } else if (password.length < 6) {
         res.status(400).send(
             {
@@ -968,10 +968,14 @@ app.post('/product/create', function (req, res) {
         return 0;
     }
     // Assuming you want to return the URL as a response
+    let sellerId = null;
+    if ( auth.user.role == "seller") {
+        sellerId = auth.user.role;
+    }
     let imageUrl = null;
 
-    connection.query('INSERT INTO products (id,name,price,quantity,image,created_by) VALUES ( ? , ?  , ? , ? , ? , ? )'
-        , [id, name.trim(), price, quantity, imageUrl, userId]
+    connection.query('INSERT INTO products (id,name,price,quantity,image, seller_id ,created_by) VALUES ( ? , ?  , ? , ? , ? , ? , ? )'
+        , [id, name.trim(), price, quantity, imageUrl, sellerId , userId]
         , (error, results, fields) => {
             if (error) {
                 res.status(500).send(
