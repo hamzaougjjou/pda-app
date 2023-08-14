@@ -887,7 +887,7 @@ app.put('/auth/:id', function (req, res) {
 })
 
 //create a new product by user
-app.get('/product/create', function (req, res) {
+app.post('/product/create', function (req, res) {
 
 
     const auth = authenticateToken(req);
