@@ -887,7 +887,7 @@ app.put('/auth/:id', function (req, res) {
 })
 
 //create a new product by user
-app.post('/product/create', function (req, res) {
+app.get('/product/create', function (req, res) {
 
 
     const auth = authenticateToken(req);
@@ -970,8 +970,9 @@ app.post('/product/create', function (req, res) {
     // Assuming you want to return the URL as a response
     let sellerId = null;
     if ( auth.user.role == "seller") {
-        sellerId = auth.user.role;
+        sellerId = userId;
     }
+
     let imageUrl = null;
 
     connection.query('INSERT INTO products (id,name,price,quantity,image, seller_id ,created_by) VALUES ( ? , ?  , ? , ? , ? , ? , ? )'
