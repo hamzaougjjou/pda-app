@@ -403,57 +403,6 @@ app.post('/login', function (req, res) {
 })
 
 //get a single user get all client search for client 
-app.get('/clients', function (req, res) {
-    const auth = authenticateToken(req);
-    //check if user loged in
-    if (auth.status === false) {
-        res.status(401).json({
-            "success": false,
-            "message": "unauthenticated",
-        });
-        return false;
-    }
-    if (auth.user.role != "seller") {
-        res.status(401).send(
-            {
-                "success": false,
-                "message": "unautherized",
-                "user": auth
-            }
-        );
-        return false;
-    }
-
-    let q = req.query.query;
-    let userId = auth.user.id;
-
-    let myDbQuery1 = "select * from users where created_by=? and role='client'";
-    if (q) {
-        myDbQuery1 = "select * from users where created_by=? and (name like '%' ? '%' or id like '%' ? '%' ) and role='client'";
-    }
-    connection.query(myDbQuery1, [userId, q, q]
-        , (error, results, fields) => {
-            //data base unknow error
-            if (error) {
-                res.status(500).send(
-                    {
-                        "success": false,
-                        "message": "somthing went wrong"
-                    }
-                );
-                return false;
-            }
-
-            res.status(200).json({
-                "success": true,
-                "message": "clients retrieved successfully",
-                "data": results
-            })
-
-            // ======================================
-
-        });
-})
 
 //delete a seller by admin
 app.delete('/user/:id', function (req, res) {
@@ -502,7 +451,8 @@ app.delete('/user/:id', function (req, res) {
         });
 })
 
-app.get('/sellers', function (req, res) {
+//get a single user get all client and sellers || search for client and sellers
+app.get('/users', function (req, res) {
     const auth = authenticateToken(req);
     //check if user loged in
     if (auth.status === false) {
@@ -512,7 +462,7 @@ app.get('/sellers', function (req, res) {
         });
         return false;
     }
-    if (auth.user.role != "admin") {
+    if (auth.user.role != "admin" && auth.user.role != "seller" ) {
         res.status(401).send(
             {
                 "success": false,
@@ -522,14 +472,20 @@ app.get('/sellers', function (req, res) {
         return false;
     }
 
+    let queryRole = "seller";
+    if ( auth.user.role == "seller")
+        queryRole = "client"
+
     let q = req.query.q;
     let userId = auth.user.id;
 
-    let myDbQuery1 = "select * from users where created_by=? and role='seller'";
+    let myDbQuery1 = "select * from users where created_by=? and role=? ";
+    let queryParams = [userId , queryRole ]
     if (q) {
-        myDbQuery1 = "select * from users where created_by=? and (name like '%' ? '%' or id like '%' ? '%' ) and role='seller'";
+        myDbQuery1 = "select * from users where created_by=? and (name like '%' ? '%' or id like '%' ? '%' ) and role=? ";
+        queryParams = [userId , q , q , queryRole ]
     }
-    connection.query(myDbQuery1, [userId, q, q]
+    connection.query(myDbQuery1, queryParams
         , (error, results, fields) => {
             //data base unknow error
             if (error) {
