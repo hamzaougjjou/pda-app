@@ -473,9 +473,11 @@ app.get('/users', function (req, res) {
     }
 
     let queryRole = "seller";
-    if ( auth.user.role == "seller")
-        queryRole = "client"
+    if ( auth.user.role == "seller"){
+        queryRole = "client";
+    }
 
+   
     let q = req.query.q;
     let userId = auth.user.id;
 
@@ -484,7 +486,13 @@ app.get('/users', function (req, res) {
     if (q) {
         myDbQuery1 = "select * from users where created_by=? and (name like '%' ? '%' or id like '%' ? '%' ) and role=? ";
         queryParams = [userId , q , q , queryRole ]
+    } 
+
+    if ( req.query.sector && auth.user.role === "seller") {
+        myDbQuery1 = myDbQuery1 + "and sector=? ";
+        queryParams.push(  req.query.sector );
     }
+
     connection.query(myDbQuery1, queryParams
         , (error, results, fields) => {
             //data base unknow error
