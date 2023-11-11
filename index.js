@@ -578,12 +578,14 @@ app.post('/user/create', function (req, res) {
     }
 
     let role = 'seller';
+    let sector = null;
     if (auth.user.role.toLocaleLowerCase() == "seller") {
         role = "client";
+        sector = req.query.sector;
     }
 
-    connection.query('INSERT INTO users (id,name,phone,password,role,created_by) VALUES ( ? , ?  , ? , ? , ? , ? )'
-        , [id, name.trim(), phone, password, role, userId]
+    connection.query('INSERT INTO users (id,name,phone,password,role,created_by,sector) VALUES ( ? , ?  , ? , ? , ? , ? , ?)'
+        , [id, name.trim(), phone, password, role, userId , sector]
         , (error, results, fields) => {
             if (error) {
                 res.status(500).send(
