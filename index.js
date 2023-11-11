@@ -555,7 +555,7 @@ app.post('/user/create', function (req, res) {
         return 0;
     }
     //check for a valid price
-    if (!password) {
+    if (!password && auth.user.role.toLocaleLowerCase() != "seller") {
         res.status(400).send(
             {
                 "success": false,
@@ -563,7 +563,7 @@ app.post('/user/create', function (req, res) {
             }
         );
         return 0; 
-    } else if (password.length < 6) {
+    } else if (password.length < 6 && auth.user.role.toLocaleLowerCase() == "seller") {
         res.status(400).send(
             {
                 "success": false,
