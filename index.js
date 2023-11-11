@@ -513,7 +513,7 @@ app.get('/users', function (req, res) {
 app.post('/user/create', function (req, res) {
 
     const auth = authenticateToken(req);
-
+    let password = null;
     //check if user loged in
     if (auth.status === false) {
         res.status(401).json({
@@ -533,7 +533,7 @@ app.post('/user/create', function (req, res) {
     }
 
     let id = generateId();
-    let { name, phone, password } = req.query;
+    let { name, phone } = req.query;
     let userId = auth.user.id;    //validate data 
     //check for a valid name
     if (!name) {
@@ -563,7 +563,7 @@ app.post('/user/create', function (req, res) {
             }
         );
         return 0; 
-    } else if (password.length < 6 && auth.user.role.toLocaleLowerCase() == "seller") {
+    } else if (password && password.length < 6 && auth.user.role.toLocaleLowerCase() == "seller") {
         res.status(400).send(
             {
                 "success": false,
@@ -571,6 +571,10 @@ app.post('/user/create', function (req, res) {
             }
         );
         return 0;
+    }
+
+    if ( req.query.password ) {
+        password =  req.query.password;
     }
 
     if (!phone) {
@@ -591,7 +595,8 @@ app.post('/user/create', function (req, res) {
                 res.status(500).send(
                     {
                         "success": false,
-                        "message": "somthing went wrong"
+                        "error": error,
+                        "message": "somthing went wrong2"
                     }
                 );
                 return false;
