@@ -661,7 +661,7 @@ app.put('/user/:id', function (req, res) {
         return false;
     }
 
-    if (authRole === "admin")
+    if (authRole === "admin") {
         if (!password || password.trim().length < 6) {
             res.status(500).send(
                 {
@@ -671,14 +671,14 @@ app.put('/user/:id', function (req, res) {
             );
             return false;
         }
-
+    }
 
     let parameters = [name, password, userId];
     let q = "update users set name=? , password=? where id=?";
 
     if (authRole === "seller") {
         q = "update users set name=? , sector=? where id=?";
-        parameters = [ name , sector , userId];
+        parameters = [name, sector, userId];
     }
 
     if (phone) {
@@ -686,7 +686,7 @@ app.put('/user/:id', function (req, res) {
         parameters = [name, password, phone, userId];
         if (authRole === "seller") {
             q = "update users set name=? , phone=? , sector=? where id=?";
-            parameters = [name , phone, sector , userId];
+            parameters = [name, phone, sector, userId];
             return false;
         }
         q = "update users set name=? , password=? , phone=? where id=?";
