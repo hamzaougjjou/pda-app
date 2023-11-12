@@ -684,13 +684,14 @@ app.put('/user/:id', function (req, res) {
     if (phone) {
         q = "update users set name=? , password=? , phone=? where id=?";
         parameters = [name, password, phone, userId];
+
         if (authRole === "seller") {
             q = "update users set name=? , phone=? , sector=? where id=?";
             parameters = [name, phone, sector, userId];
-            return false;
+        } else {
+            q = "update users set name=? , password=? , phone=? where id=?";
+            parameters = [name, password, phone, userId];
         }
-        q = "update users set name=? , password=? , phone=? where id=?";
-        parameters = [name, password, phone, userId];
     }
 
     connection.query(q, parameters
