@@ -222,7 +222,7 @@ app.put('/auth/password', function (req, res) {
         );
         return false;
     }
-    if ( !newPassword ){
+    if (!newPassword) {
         res.status(200).send(
             {
                 "success": false,
@@ -294,7 +294,7 @@ app.put('/auth/password', function (req, res) {
                 return false;
             }
             connection.query("update users set password=? where  id=?",
-                [newPassword , userId ]
+                [newPassword, userId]
                 , (error2, results2, fields3) => {
                     //data base unknow error
                     if (error2) {
@@ -462,7 +462,7 @@ app.get('/users', function (req, res) {
         });
         return false;
     }
-    if (auth.user.role != "admin" && auth.user.role != "seller" ) {
+    if (auth.user.role != "admin" && auth.user.role != "seller") {
         res.status(401).send(
             {
                 "success": false,
@@ -473,24 +473,24 @@ app.get('/users', function (req, res) {
     }
 
     let queryRole = "seller";
-    if ( auth.user.role == "seller"){
+    if (auth.user.role == "seller") {
         queryRole = "client";
     }
 
-   
+
     let q = req.query.q;
     let userId = auth.user.id;
 
     let myDbQuery1 = "select * from users where created_by=? and role=? ";
-    let queryParams = [userId , queryRole ]
+    let queryParams = [userId, queryRole]
     if (q) {
         myDbQuery1 = "select * from users where created_by=? and (name like '%' ? '%' or id like '%' ? '%' ) and role=? ";
-        queryParams = [userId , q , q , queryRole ]
-    } 
+        queryParams = [userId, q, q, queryRole]
+    }
 
-    if ( req.query.sector && auth.user.role === "seller") {
+    if (req.query.sector && auth.user.role === "seller") {
         myDbQuery1 = myDbQuery1 + "and sector=? ";
-        queryParams.push(  req.query.sector );
+        queryParams.push(req.query.sector);
     }
 
     connection.query(myDbQuery1, queryParams
@@ -530,7 +530,7 @@ app.post('/user/create', function (req, res) {
         });
         return false;
     }
-    if (auth.user.role != "admin" && auth.user.role !="seller" ) {
+    if (auth.user.role != "admin" && auth.user.role != "seller") {
         res.status(401).send(
             {
                 "success": false,
@@ -570,7 +570,7 @@ app.post('/user/create', function (req, res) {
                 "message": "password is required"
             }
         );
-        return 0; 
+        return 0;
     } else if (password && password.length < 6 && auth.user.role.toLocaleLowerCase() == "seller") {
         res.status(400).send(
             {
@@ -581,8 +581,8 @@ app.post('/user/create', function (req, res) {
         return 0;
     }
 
-    if ( req.query.password ) {
-        password =  req.query.password;
+    if (req.query.password) {
+        password = req.query.password;
     }
 
     if (!phone) {
@@ -597,7 +597,7 @@ app.post('/user/create', function (req, res) {
     }
 
     connection.query('INSERT INTO users (id,name,phone,password,role,created_by,sector) VALUES ( ? , ?  , ? , ? , ? , ? , ?)'
-        , [id, name.trim(), phone, password, role, userId , sector]
+        , [id, name.trim(), phone, password, role, userId, sector]
         , (error, results, fields) => {
             if (error) {
                 res.status(500).send(
@@ -634,7 +634,8 @@ app.put('/user/:id', function (req, res) {
         });
         return false;
     }
-    if (auth.user.role != "admin" && auth.user.role != "seller") {
+    let authRole = auth.user.role;
+    if (authRole != "admin" && authRole != "seller") {
         res.status(401).send(
             {
                 "success": false,
@@ -648,6 +649,7 @@ app.put('/user/:id', function (req, res) {
     let name = req.query.name;
     let password = req.query.password;
     let phone = req.query.phone;
+    let sector = req.query.sector;
 
     if (!name || name.trim().length < 1) {
         res.status(500).send(
@@ -659,21 +661,34 @@ app.put('/user/:id', function (req, res) {
         return false;
     }
 
-    if (!password || password.trim().length < 6) {
-        res.status(500).send(
-            {
-                "success": false,
-                "message": "invalid password"
-            }
-        );
-        return false;
-    }
+    if (authRole === "admin")
+        if (!password || password.trim().length < 6) {
+            res.status(500).send(
+                {
+                    "success": false,
+                    "message": "invalid password"
+                }
+            );
+            return false;
+        }
 
 
     let parameters = [name, password, userId];
     let q = "update users set name=? , password=? where id=?";
 
+    if (authRole === "seller") {
+        q = "update users set name=? , sector=? where id=?";
+        parameters = [ name , sector , userId];
+    }
+
     if (phone) {
+        q = "update users set name=? , password=? , phone=? where id=?";
+        parameters = [name, password, phone, userId];
+        if (authRole === "seller") {
+            q = "update users set name=? , phone=? , sector=? where id=?";
+            parameters = [name , phone, sector , userId];
+            return false;
+        }
         q = "update users set name=? , password=? , phone=? where id=?";
         parameters = [name, password, phone, userId];
     }
@@ -940,14 +955,14 @@ app.post('/product/create', function (req, res) {
     }
     // Assuming you want to return the URL as a response
     let sellerId = null;
-    if ( auth.user.role == "seller") {
+    if (auth.user.role == "seller") {
         sellerId = userId;
     }
 
     let imageUrl = null;
 
     connection.query('INSERT INTO products (id,name,price,quantity,image, seller_id ,created_by) VALUES ( ? , ?  , ? , ? , ? , ? , ? )'
-        , [id, name.trim(), price, quantity, imageUrl, sellerId , userId]
+        , [id, name.trim(), price, quantity, imageUrl, sellerId, userId]
         , (error, results, fields) => {
             if (error) {
                 res.status(500).send(
