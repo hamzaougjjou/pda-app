@@ -1183,7 +1183,8 @@ app.get('/company/info', function (req, res) {
         });
         return false;
     }
-    if (auth.user.role != "admin") {
+
+    if (auth.user.role != "admin" && auth.user.role != "seller") {
         res.status(401).json({
             "success": false,
             "message": "unautherized",
@@ -1215,7 +1216,6 @@ app.get('/company/info', function (req, res) {
             })
 
             // ======================================
-
         });
 })
 
