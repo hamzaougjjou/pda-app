@@ -1197,7 +1197,7 @@ app.get('/company/info', function (req, res) {
 
     let comdanyId = auth.user.company_id;
 
-    let myDbQuery1 = "select * from company where id=? limit 1";
+    let myDbQuery1 = "select * from company where id=?";
     connection.query(myDbQuery1, [comdanyId]
         , (error, results, fields) => {
             //data base unknow error
