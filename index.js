@@ -543,6 +543,7 @@ app.post('/user/create', function (req, res) {
     let id = generateId();
     let { name, phone } = req.query;
     let userId = auth.user.id;    //validate data 
+    let companyId = null;
     //check for a valid name
     if (!name) {
         res.status(400).send(
@@ -595,9 +596,13 @@ app.post('/user/create', function (req, res) {
         role = "client";
         sector = req.query.sector;
     }
+    if (auth.user.role.toLocaleLowerCase() == "admin") {
+        companyId = auth.user.company_id;
+    }
 
-    connection.query('INSERT INTO users (id,name,phone,password,role,created_by,sector) VALUES ( ? , ?  , ? , ? , ? , ? , ?)'
-        , [id, name.trim(), phone, password, role, userId, sector]
+
+    connection.query('INSERT INTO users (id,name,phone,password,role,created_by,sector,company_id) VALUES ( ? , ?  , ? , ? , ? , ? , ?,?)'
+        , [id, name.trim(), phone, password, role, userId, sector , companyId ]
         , (error, results, fields) => {
             if (error) {
                 res.status(500).send(
@@ -1213,7 +1218,7 @@ app.get('/company/info', function (req, res) {
                 "success": true,
                 "message": "company info retrieved successfully",
                 "data": results[0]
-            })
+            });
 
             // ======================================
         });
