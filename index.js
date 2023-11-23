@@ -1214,7 +1214,7 @@ app.get('/company/info', function (req, res) {
             res.status(200).json({
                 "success": true,
                 "message": "company info retrieved successfully",
-                "data": results[0]
+                "data": results
             });
 
             // ======================================
